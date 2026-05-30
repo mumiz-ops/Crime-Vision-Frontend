@@ -1,0 +1,808 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Crime Vision 2.0 — FYP Phase 1 | S26CS054 | UCP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.10.0/dist/tabler-icons.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+  :root {
+    --red: #E24B4A; --amber: #EF9F27; --blue: #378ADD; --green: #1D9E75;
+    --bg: #0D0D0F; --bg2: #141417; --bg3: #1A1A1F; --bg4: #222228;
+    --border: rgba(255,255,255,0.07); --border2: rgba(255,255,255,0.12);
+    --text: #F0EFE8; --text2: #8A8A96; --text3: #5A5A66;
+    --font: 'Syne', sans-serif; --mono: 'JetBrains Mono', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { font-family: var(--font); background: var(--bg); color: var(--text); min-height: 100vh; overflow-x: hidden; }
+
+  /* SCROLLBAR */
+  ::-webkit-scrollbar { width: 4px; } ::-webkit-scrollbar-track { background: var(--bg2); } ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 2px; }
+
+  /* NAV */
+  .nav { position: sticky; top: 0; z-index: 100; background: rgba(13,13,15,0.92); backdrop-filter: blur(16px); border-bottom: 1px solid var(--border); padding: 0 1.5rem; display: flex; align-items: center; justify-content: space-between; height: 54px; }
+  .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; }
+  .nav-logo { width: 32px; height: 32px; background: var(--red); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 17px; color: #fff; }
+  .nav-title { font-size: 15px; font-weight: 700; color: var(--text); letter-spacing: -0.3px; }
+  .nav-title span { color: var(--red); }
+  .nav-tabs { display: flex; gap: 2px; }
+  .nav-tab { padding: 5px 11px; border-radius: 7px; font-size: 12px; font-weight: 500; font-family: var(--font); cursor: pointer; color: var(--text2); border: none; background: none; transition: all 0.15s; letter-spacing: 0.2px; }
+  .nav-tab:hover { background: var(--bg3); color: var(--text); }
+  .nav-tab.active { background: var(--bg4); color: var(--text); }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .alert-badge { background: var(--red); color: #fff; font-size: 10px; font-weight: 600; padding: 2px 7px; border-radius: 20px; font-family: var(--mono); }
+  .role-badge { font-size: 11px; padding: 3px 9px; border-radius: 20px; background: var(--bg4); color: var(--text2); border: 1px solid var(--border); font-family: var(--mono); }
+  .avatar { width: 30px; height: 30px; border-radius: 50%; background: rgba(226,75,74,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--red); border: 1px solid rgba(226,75,74,0.3); }
+
+  /* PAGES */
+  .page { display: none; padding: 1.5rem; max-width: 1400px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* LOGIN */
+  .login-wrap { display: flex; align-items: center; justify-content: center; min-height: calc(100vh - 54px); }
+  .login-card { background: var(--bg2); border: 1px solid var(--border2); border-radius: 16px; padding: 2.5rem; width: 100%; max-width: 400px; }
+  .login-logo { width: 48px; height: 48px; background: var(--red); border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #fff; margin-bottom: 1.5rem; }
+  .login-heading { font-size: 20px; font-weight: 700; color: var(--text); margin-bottom: 4px; }
+  .login-sub { font-size: 13px; color: var(--text2); margin-bottom: 2rem; font-family: var(--mono); }
+  .form-row { margin-bottom: 1rem; }
+  .form-label { font-size: 11px; color: var(--text2); margin-bottom: 5px; display: block; text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .form-row input, .form-row select { width: 100%; padding: 9px 12px; font-size: 13px; border: 1px solid var(--border2); border-radius: 8px; background: var(--bg3); color: var(--text); font-family: var(--mono); outline: none; }
+  .form-row input:focus, .form-row select:focus { border-color: var(--red); }
+  .form-row select option { background: var(--bg3); }
+  .login-btn { width: 100%; padding: 10px; background: var(--red); color: #fff; border: none; border-radius: 8px; font-size: 14px; font-weight: 700; font-family: var(--font); cursor: pointer; margin-top: 0.5rem; transition: background 0.15s; letter-spacing: 0.3px; }
+  .login-btn:hover { background: #c63b3a; }
+  .login-chips-label { font-size: 11px; color: var(--text3); margin-top: 1.25rem; font-family: var(--mono); text-transform: uppercase; letter-spacing: 0.5px; }
+  .login-chips { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+  .login-chip { font-size: 11px; padding: 4px 12px; border-radius: 20px; background: var(--bg4); color: var(--text2); cursor: pointer; border: 1px solid var(--border2); transition: all 0.15s; font-family: var(--mono); }
+  .login-chip:hover { border-color: var(--red); color: var(--red); }
+
+  /* METRICS */
+  .metrics-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin-bottom: 1.25rem; }
+  .metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.125rem; position: relative; overflow: hidden; }
+  .metric-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: var(--accent, var(--red)); }
+  .metric-label { font-size: 11px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .metric-value { font-size: 26px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+  .metric-delta { font-size: 11px; margin-top: 4px; font-family: var(--mono); }
+  .delta-up { color: var(--red); } .delta-dn { color: var(--green); } .delta-neu { color: var(--text2); }
+
+  /* GRID */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 1.25rem; }
+  .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1.125rem 1.25rem; }
+  .section-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+  .section-title { font-size: 13px; font-weight: 600; color: var(--text); }
+  .section-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); }
+  .chart-wrap { position: relative; width: 100%; height: 200px; }
+
+  /* CITY CHIPS */
+  .city-chips { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 1rem; }
+  .city-chip { font-size: 11px; padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border2); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.15s; font-family: var(--mono); }
+  .city-chip.active { background: var(--red); color: #fff; border-color: var(--red); }
+
+  /* ALERTS */
+  .alert-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+  .alert-item:last-child { border-bottom: none; }
+  .alert-dot { width: 7px; height: 7px; border-radius: 50%; flex-shrink: 0; margin-top: 5px; }
+  .dot-r { background: var(--red); box-shadow: 0 0 6px var(--red); }
+  .dot-a { background: var(--amber); box-shadow: 0 0 6px var(--amber); }
+  .dot-g { background: var(--green); box-shadow: 0 0 6px var(--green); }
+  .alert-text { font-size: 12px; color: var(--text); }
+  .alert-time { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .nlp-box { background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 1rem; font-size: 12px; color: var(--text2); line-height: 1.8; font-family: var(--mono); }
+  .nlp-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .ntag { font-size: 10px; padding: 2px 8px; border-radius: 20px; font-family: var(--mono); }
+  .nt-r { background: rgba(226,75,74,0.15); color: var(--red); border: 1px solid rgba(226,75,74,0.3); }
+  .nt-a { background: rgba(239,159,39,0.15); color: var(--amber); border: 1px solid rgba(239,159,39,0.3); }
+  .nt-b { background: rgba(55,138,221,0.15); color: var(--blue); border: 1px solid rgba(55,138,221,0.3); }
+
+  /* SHAP */
+  .shap-row { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; }
+  .shap-label { font-size: 11px; color: var(--text2); width: 110px; flex-shrink: 0; text-align: right; font-family: var(--mono); }
+  .shap-bar-wrap { flex: 1; height: 10px; background: var(--bg3); border-radius: 3px; overflow: hidden; }
+  .shap-bar { height: 100%; border-radius: 3px; }
+  .shap-val { font-size: 10px; color: var(--text2); width: 36px; font-family: var(--mono); }
+  .gauge-wrap { display: flex; flex-direction: column; align-items: center; padding: 0.5rem 0; }
+  .gauge-score { font-size: 40px; font-weight: 700; color: var(--text); font-family: var(--mono); }
+  .gauge-label { font-size: 11px; color: var(--text3); margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .gauge-bar { width: 100%; height: 6px; border-radius: 3px; background: var(--bg3); margin-top: 12px; overflow: hidden; }
+  .gauge-fill { height: 100%; border-radius: 3px; background: linear-gradient(90deg, var(--green), var(--amber), var(--red)); }
+
+  /* SPRINT */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .data-table th { font-size: 10px; font-weight: 600; color: var(--text3); padding: 6px 8px; text-align: left; border-bottom: 1px solid var(--border2); text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .data-table td { padding: 7px 8px; color: var(--text); border-bottom: 1px solid var(--border); vertical-align: top; font-size: 12px; line-height: 1.5; }
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+  .pill { font-size: 10px; padding: 2px 8px; border-radius: 20px; display: inline-block; white-space: nowrap; font-family: var(--mono); }
+  .p-done { background: rgba(29,158,117,0.15); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
+  .p-prog { background: rgba(239,159,39,0.15); color: var(--amber); border: 1px solid rgba(239,159,39,0.3); }
+  .p-todo { background: var(--bg4); color: var(--text2); border: 1px solid var(--border2); }
+  .p-high { background: rgba(226,75,74,0.15); color: var(--red); border: 1px solid rgba(226,75,74,0.3); }
+  .p-med { background: rgba(239,159,39,0.15); color: var(--amber); border: 1px solid rgba(239,159,39,0.3); }
+  .p-low { background: rgba(29,158,117,0.15); color: var(--green); border: 1px solid rgba(29,158,117,0.3); }
+  .epic-tag { font-size: 10px; padding: 2px 7px; border-radius: 20px; background: rgba(55,138,221,0.15); color: var(--blue); border: 1px solid rgba(55,138,221,0.3); font-family: var(--mono); }
+
+  /* BURNDOWN */
+  .burn-row { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
+  .burn-day { font-size: 11px; color: var(--text3); width: 36px; font-family: var(--mono); }
+  .burn-bar-wrap { flex: 1; height: 14px; background: var(--bg3); border-radius: 3px; overflow: hidden; position: relative; }
+  .burn-planned { height: 100%; border-radius: 3px; background: rgba(55,138,221,0.3); }
+  .burn-actual { position: absolute; top: 0; left: 0; height: 100%; border-radius: 3px; background: var(--blue); opacity: 0.7; }
+  .burn-val { font-size: 10px; color: var(--text3); width: 26px; font-family: var(--mono); }
+
+  /* RISK */
+  .risk-item { display: flex; align-items: flex-start; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--border); }
+  .risk-item:last-child { border-bottom: none; }
+  .risk-text { font-size: 12px; color: var(--text); }
+  .risk-mit { font-size: 11px; color: var(--text3); margin-top: 3px; font-family: var(--mono); }
+
+  /* SRS DOCS */
+  .srs-tabs { display: flex; gap: 4px; flex-wrap: wrap; margin-bottom: 1.25rem; }
+  .srs-tab { font-size: 11px; padding: 5px 11px; border-radius: 7px; border: 1px solid var(--border2); background: var(--bg2); color: var(--text2); cursor: pointer; transition: all 0.15s; font-family: var(--mono); }
+  .srs-tab:hover { border-color: var(--red); color: var(--red); }
+  .srs-tab.active { background: var(--bg4); color: var(--text); border-color: var(--border2); }
+  .srs-section { display: none; }
+  .srs-section.active { display: block; }
+
+  /* TEAM CARDS */
+  .team-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 1.25rem; }
+  .team-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 12px; padding: 1rem; display: flex; align-items: flex-start; gap: 12px; }
+  .team-av { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 700; flex-shrink: 0; font-family: var(--mono); }
+  .av-r { background: rgba(226,75,74,0.15); color: var(--red); border: 2px solid rgba(226,75,74,0.3); }
+  .av-b { background: rgba(55,138,221,0.15); color: var(--blue); border: 2px solid rgba(55,138,221,0.3); }
+  .av-g { background: rgba(29,158,117,0.15); color: var(--green); border: 2px solid rgba(29,158,117,0.3); }
+  .av-a { background: rgba(239,159,39,0.15); color: var(--amber); border: 2px solid rgba(239,159,39,0.3); }
+  .team-name { font-size: 13px; font-weight: 600; color: var(--text); }
+  .team-role { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+  .team-desc { font-size: 11px; color: var(--text2); margin-top: 6px; line-height: 1.6; }
+
+  /* NFR */
+  .nfr-block { margin-bottom: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+  .nfr-block:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .nfr-title { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; display: flex; align-items: center; gap: 7px; }
+  .nfr-body { font-size: 12px; color: var(--text2); line-height: 1.7; font-family: var(--mono); }
+
+  /* GLOSSARY */
+  .glossary-row { display: flex; gap: 12px; padding: 7px 0; border-bottom: 1px solid var(--border); font-size: 12px; }
+  .glossary-row:last-child { border-bottom: none; }
+  .glossary-term { font-weight: 600; color: var(--red); min-width: 80px; flex-shrink: 0; font-family: var(--mono); }
+  .glossary-def { color: var(--text2); line-height: 1.5; }
+
+  /* RELEASE */
+  .release-item { display: flex; align-items: flex-start; gap: 8px; padding: 6px 0; font-size: 12px; color: var(--text); font-family: var(--mono); border-bottom: 1px solid var(--border); }
+  .release-item:last-child { border-bottom: none; }
+  .r-check { color: var(--green); flex-shrink: 0; }
+
+  /* KANBAN */
+  .kanban-grid { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 10px; }
+  .kanban-col-title { font-size: 10px; font-weight: 600; color: var(--text3); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px; font-family: var(--mono); }
+  .kanban-card { font-size: 11px; background: var(--bg3); border: 1px solid var(--border); border-radius: 7px; padding: 8px 10px; margin-bottom: 6px; color: var(--text); line-height: 1.4; }
+  .kanban-card-done { background: rgba(29,158,117,0.08); border-color: rgba(29,158,117,0.2); color: var(--green); }
+
+  /* LEGEND */
+  .legend { display: flex; gap: 14px; margin-top: 8px; font-size: 10px; color: var(--text3); font-family: var(--mono); }
+  .legend-dot { width: 9px; height: 9px; border-radius: 2px; display: inline-block; }
+
+  /* FOOTER */
+  footer { text-align: center; padding: 2rem; font-size: 11px; color: var(--text3); border-top: 1px solid var(--border); font-family: var(--mono); margin-top: 2rem; }
+  footer strong { color: var(--text2); }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <a class="nav-brand" href="#">
+    <div class="nav-logo"><i class="ti ti-shield-check"></i></div>
+    <span class="nav-title">Crime <span>Vision</span> 2.0</span>
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab" data-page="login" onclick="showPage('login')"><i class="ti ti-lock"></i> Login</button>
+    <button class="nav-tab active" data-page="dashboard" onclick="showPage('dashboard')"><i class="ti ti-layout-dashboard"></i> Dashboard</button>
+    <button class="nav-tab" data-page="anomaly" onclick="showPage('anomaly')"><i class="ti ti-alert-triangle"></i> Anomaly</button>
+    <button class="nav-tab" data-page="xai" onclick="showPage('xai')"><i class="ti ti-brain"></i> XAI/SHAP</button>
+    <button class="nav-tab" data-page="sprints" onclick="showPage('sprints')"><i class="ti ti-list-check"></i> Sprints</button>
+    <button class="nav-tab" data-page="risks" onclick="showPage('risks')"><i class="ti ti-bug"></i> Risks</button>
+    <button class="nav-tab" data-page="srs" onclick="showPage('srs')"><i class="ti ti-file-text"></i> SRS Docs</button>
+  </div>
+  <div class="nav-right">
+    <span class="alert-badge">3</span>
+    <span class="role-badge" id="roleLabel">Analyst</span>
+    <div class="avatar" id="avatarInitials">HR</div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════
+     LOGIN
+═══════════════════════════════════════════ -->
+<div class="page" id="page-login">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="login-logo"><i class="ti ti-shield-check"></i></div>
+      <div class="login-heading">Sign in to Crime Vision</div>
+      <div class="login-sub">AI-driven crime intelligence · UCP FYP S26CS054</div>
+      <div class="form-row">
+        <label class="form-label">Email address</label>
+        <input type="email" placeholder="officer@police.gov.pk" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">Password</label>
+        <input type="password" placeholder="••••••••" />
+      </div>
+      <div class="form-row">
+        <label class="form-label">Role</label>
+        <select id="loginRole">
+          <option value="Admin">Admin</option>
+          <option value="Analyst" selected>Analyst</option>
+          <option value="Viewer">Viewer</option>
+        </select>
+      </div>
+      <button class="login-btn" onclick="doLogin()">Sign in with JWT &rarr;</button>
+      <div class="login-chips-label">Quick demo login</div>
+      <div class="login-chips">
+        <span class="login-chip" onclick="quickLogin('Admin','AA')">Admin</span>
+        <span class="login-chip" onclick="quickLogin('Analyst','HR')">Husnain (Analyst)</span>
+        <span class="login-chip" onclick="quickLogin('Viewer','GP')">Viewer</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     DASHBOARD
+═══════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+  <div class="metrics-row">
+    <div class="metric-card" style="--accent:var(--red)">
+      <div class="metric-label"><i class="ti ti-chart-line"></i> Total Crimes (30d)</div>
+      <div class="metric-value">4,821</div>
+      <div class="metric-delta delta-up"><i class="ti ti-arrow-up"></i> +8.3% vs last month</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--amber)">
+      <div class="metric-label"><i class="ti ti-alert-circle"></i> Active Anomalies</div>
+      <div class="metric-value">7</div>
+      <div class="metric-delta delta-up"><i class="ti ti-arrow-up"></i> 2 new today</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--blue)">
+      <div class="metric-label"><i class="ti ti-target"></i> Forecast Accuracy</div>
+      <div class="metric-value">87%</div>
+      <div class="metric-delta delta-dn">LSTM / Prophet</div>
+    </div>
+    <div class="metric-card" style="--accent:var(--green)">
+      <div class="metric-label"><i class="ti ti-bell"></i> Alerts Triggered</div>
+      <div class="metric-value">3</div>
+      <div class="metric-delta delta-neu">Last 2 hours</div>
+    </div>
+  </div>
+  <div class="city-chips">
+    <span class="city-chip active" onclick="setCity(this)">Lahore</span>
+    <span class="city-chip" onclick="setCity(this)">Karachi</span>
+    <span class="city-chip" onclick="setCity(this)">Islamabad</span>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Crime Forecast — LSTM / Prophet</span><span class="section-sub">Next 7 days</span></div>
+      <div class="chart-wrap"><canvas id="forecastChart"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <span><span class="legend-dot" style="background:var(--red)"></span> Predicted</span>
+        <span><span class="legend-dot" style="background:var(--blue)"></span> Actual</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Crime by Category</span><span class="section-sub">Current month</span></div>
+      <div class="chart-wrap"><canvas id="categoryChart"></canvas></div>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Real-time Alerts</span><span class="alert-badge">3 active</span></div>
+      <div class="alert-item"><div class="alert-dot dot-r"></div><div><div class="alert-text">Theft spike in Defence, Lahore — 340% above baseline</div><div class="alert-time"><i class="ti ti-clock"></i> 14 min ago · Autoencoder trigger</div></div></div>
+      <div class="alert-item"><div class="alert-dot dot-a"></div><div><div class="alert-text">Robbery cluster forming near Gulberg — 5 incidents in 2h</div><div class="alert-time"><i class="ti ti-clock"></i> 1h 02m ago · Threshold trigger</div></div></div>
+      <div class="alert-item"><div class="alert-dot dot-g"></div><div><div class="alert-text">Islamabad assault rate returning to normal levels</div><div class="alert-time"><i class="ti ti-clock"></i> 3h ago · Resolved</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">NLP Crime Intelligence Summary</span></div>
+      <div class="nlp-tags">
+        <span class="ntag nt-r">High Risk</span>
+        <span class="ntag nt-a">Lahore</span>
+        <span class="ntag nt-b">Theft +8.3%</span>
+      </div>
+      <div class="nlp-box">Over the past 30 days, Lahore has seen an 8.3% rise in overall crime with theft being the dominant category at 1,820 incidents. Anomalous spikes were detected in Defence and Gulberg zones. Prophet model forecasts a continued upward trend. Immediate resource reallocation to high-risk zones is recommended.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     ANOMALY
+═══════════════════════════════════════════ -->
+<div class="page" id="page-anomaly">
+  <div class="metrics-row">
+    <div class="metric-card" style="--accent:var(--blue)"><div class="metric-label">Anomaly Precision</div><div class="metric-value">91%</div><div class="metric-delta delta-dn">Isolation Forest</div></div>
+    <div class="metric-card" style="--accent:var(--red)"><div class="metric-label">Anomalies Detected</div><div class="metric-value">7</div><div class="metric-delta delta-up">This week</div></div>
+    <div class="metric-card" style="--accent:var(--amber)"><div class="metric-label">Avg Confidence</div><div class="metric-value">78%</div><div class="metric-delta delta-neu">Autoencoder</div></div>
+  </div>
+  <div class="grid-2">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Anomaly Score Distribution</span><span class="section-sub">6 weeks</span></div>
+      <div class="chart-wrap"><canvas id="anomalyChart"></canvas></div>
+      <div class="legend" style="margin-top:8px">
+        <span><span class="legend-dot" style="background:rgba(55,138,221,0.4)"></span> Normal</span>
+        <span><span class="legend-dot" style="background:var(--red)"></span> Anomaly</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Risk Score Gauge — Lahore</span></div>
+      <div class="gauge-wrap">
+        <div class="gauge-score">74</div>
+        <div class="gauge-label">Overall Risk Index</div>
+        <div class="gauge-bar"><div class="gauge-fill" style="width:74%"></div></div>
+        <div style="display:flex;justify-content:space-between;width:100%;margin-top:5px;font-size:10px;color:var(--text3);font-family:var(--mono)"><span>Low</span><span>Medium</span><span>High</span></div>
+      </div>
+      <div style="margin-top:1rem">
+        <div class="shap-row"><div class="shap-label">Defence area</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:88%;background:var(--red)"></div></div><div class="shap-val">0.88</div></div>
+        <div class="shap-row"><div class="shap-label">Gulberg</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:64%;background:var(--amber)"></div></div><div class="shap-val">0.64</div></div>
+        <div class="shap-row"><div class="shap-label">Model Town</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:41%;background:var(--blue)"></div></div><div class="shap-val">0.41</div></div>
+        <div class="shap-row"><div class="shap-label">Johar Town</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:29%;background:var(--green)"></div></div><div class="shap-val">0.29</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     XAI / SHAP
+═══════════════════════════════════════════ -->
+<div class="page" id="page-xai">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">SHAP Values — Theft Prediction</span><span class="section-sub">LSTM model</span></div>
+      <div class="shap-row"><div class="shap-label">Day of week</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:92%;background:var(--red)"></div></div><div class="shap-val">+0.92</div></div>
+      <div class="shap-row"><div class="shap-label">Hour of day</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:78%;background:var(--red)"></div></div><div class="shap-val">+0.78</div></div>
+      <div class="shap-row"><div class="shap-label">Weather temp</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:55%;background:var(--amber)"></div></div><div class="shap-val">+0.55</div></div>
+      <div class="shap-row"><div class="shap-label">Prior 7d avg</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:48%;background:var(--amber)"></div></div><div class="shap-val">+0.48</div></div>
+      <div class="shap-row"><div class="shap-label">Police patrol</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:36%;background:var(--blue)"></div></div><div class="shap-val">−0.36</div></div>
+      <div class="shap-row"><div class="shap-label">Festival day</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:21%;background:var(--blue)"></div></div><div class="shap-val">+0.21</div></div>
+      <div style="margin-top:1rem;font-size:10px;color:var(--text3);border-top:1px solid var(--border);padding-top:8px;font-family:var(--mono)">Red = increases risk &nbsp;·&nbsp; Blue = reduces risk &nbsp;·&nbsp; Per FR-12 & FR-13</div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">SHAP Values — Robbery Prediction</span><span class="section-sub">Prophet model</span></div>
+      <div class="shap-row"><div class="shap-label">Night hours</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:85%;background:var(--red)"></div></div><div class="shap-val">+0.85</div></div>
+      <div class="shap-row"><div class="shap-label">Economic index</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:72%;background:var(--red)"></div></div><div class="shap-val">+0.72</div></div>
+      <div class="shap-row"><div class="shap-label">Zone density</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:61%;background:var(--amber)"></div></div><div class="shap-val">+0.61</div></div>
+      <div class="shap-row"><div class="shap-label">CCTV coverage</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:49%;background:var(--blue)"></div></div><div class="shap-val">−0.49</div></div>
+      <div class="shap-row"><div class="shap-label">Street lighting</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:38%;background:var(--blue)"></div></div><div class="shap-val">−0.38</div></div>
+      <div class="shap-row"><div class="shap-label">Month trend</div><div class="shap-bar-wrap"><div class="shap-bar" style="width:25%;background:var(--amber)"></div></div><div class="shap-val">+0.25</div></div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-head"><span class="section-title">XAI Narrative Summary</span></div>
+    <div class="nlp-box" style="margin-top:0.5rem">The LSTM model predicts high theft probability for Defence area, Lahore this Friday night. Primary drivers: weekend (day-of-week, SHAP +0.92) and late-night hours (+0.78). Reduced police patrol density adds +0.36 risk contribution. Deploying 2 additional patrol units is estimated to reduce risk by 18%.</div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SPRINTS
+═══════════════════════════════════════════ -->
+<div class="page" id="page-sprints">
+  <div class="grid-2">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Sprint Progress Tracker</span><span class="section-sub">6 sprints · 52 pts</span></div>
+      <table class="data-table">
+        <thead><tr><th>Sprint</th><th>Goal</th><th>Pts</th><th>Status</th></tr></thead>
+        <tbody>
+          <tr><td>Sprint 1</td><td>Data collection & preprocessing</td><td>5</td><td><span class="pill p-done">Done</span></td></tr>
+          <tr><td>Sprint 2</td><td>LSTM/Prophet forecasting</td><td>8</td><td><span class="pill p-prog">In progress</span></td></tr>
+          <tr><td>Sprint 3</td><td>Anomaly detection</td><td>8</td><td><span class="pill p-todo">To do</span></td></tr>
+          <tr><td>Sprint 4</td><td>XAI (SHAP) + NLP</td><td>13</td><td><span class="pill p-todo">To do</span></td></tr>
+          <tr><td>Sprint 5</td><td>Dashboard + Alert system</td><td>10</td><td><span class="pill p-todo">To do</span></td></tr>
+          <tr><td>Sprint 6</td><td>Auth, testing & deployment</td><td>8</td><td><span class="pill p-todo">To do</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Sprint 1 Burndown Chart</span><span class="section-sub">Planned vs Actual</span></div>
+      <div class="burn-row"><div class="burn-day">Day 1</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:100%"></div><div class="burn-actual" style="width:100%"></div></div><div class="burn-val">40h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 2</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:87%"></div><div class="burn-actual" style="width:95%"></div></div><div class="burn-val">38h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 3</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:75%"></div><div class="burn-actual" style="width:80%"></div></div><div class="burn-val">32h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 4</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:62%"></div><div class="burn-actual" style="width:70%"></div></div><div class="burn-val">28h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 5</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:50%"></div><div class="burn-actual" style="width:50%"></div></div><div class="burn-val">20h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 6</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:25%"></div><div class="burn-actual" style="width:30%"></div></div><div class="burn-val">12h</div></div>
+      <div class="burn-row"><div class="burn-day">Day 7</div><div class="burn-bar-wrap"><div class="burn-planned" style="width:0%"></div><div class="burn-actual" style="width:5%"></div></div><div class="burn-val">2h</div></div>
+      <div class="legend" style="margin-top:8px">
+        <span><span class="legend-dot" style="background:rgba(55,138,221,0.3)"></span> Planned</span>
+        <span><span class="legend-dot" style="background:var(--blue);opacity:0.7"></span> Actual</span>
+      </div>
+    </div>
+  </div>
+  <div class="panel">
+    <div class="section-head"><span class="section-title">Kanban Board</span><span class="section-sub">Tool: Notion</span></div>
+    <div class="kanban-grid">
+      <div>
+        <div class="kanban-col-title">To do</div>
+        <div class="kanban-card">Design prediction API</div>
+        <div class="kanban-card">Build NLP pipeline</div>
+        <div class="kanban-card">Role-based access control</div>
+        <div class="kanban-card">Crime clustering module</div>
+      </div>
+      <div>
+        <div class="kanban-col-title">In progress</div>
+        <div class="kanban-card">Implement LSTM model</div>
+        <div class="kanban-card">SHAP integration</div>
+        <div class="kanban-card">Alert threshold logic</div>
+        <div class="kanban-card">NLP narrative generator</div>
+      </div>
+      <div>
+        <div class="kanban-col-title">Testing</div>
+        <div class="kanban-card">Test anomaly detection</div>
+        <div class="kanban-card">Validate dashboard charts</div>
+        <div class="kanban-card">Security & auth testing</div>
+        <div class="kanban-card">Load & performance testing</div>
+      </div>
+      <div>
+        <div class="kanban-col-title">Done</div>
+        <div class="kanban-card kanban-card-done">Setup project structure</div>
+        <div class="kanban-card kanban-card-done">Dataset preprocessing</div>
+        <div class="kanban-card kanban-card-done">DB schema designed</div>
+        <div class="kanban-card kanban-card-done">Git repository configured</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     RISKS
+═══════════════════════════════════════════ -->
+<div class="page" id="page-risks">
+  <div class="panel">
+    <div class="section-head"><span class="section-title">Risk Register</span><span class="section-sub">8 identified risks</span></div>
+    <div class="risk-item"><span class="pill p-med">Medium</span><div><div class="risk-text">Insufficient historical crime data for accurate ML model training</div><div class="risk-mit">Mitigation: Use PBS, UNODC Pakistan, Open Data Pakistan (Karachi, Lahore, Islamabad)</div></div></div>
+    <div class="risk-item"><span class="pill p-med">Medium</span><div><div class="risk-text">Low prediction accuracy on unseen real-world crime data</div><div class="risk-mit">Mitigation: Hyperparameter tuning, cross-validation, model comparison</div></div></div>
+    <div class="risk-item"><span class="pill p-low">Low</span><div><div class="risk-text">High model inference latency causing poor dashboard performance</div><div class="risk-mit">Mitigation: Pre-compute results, implement server-side caching</div></div></div>
+    <div class="risk-item"><span class="pill p-med">Medium</span><div><div class="risk-text">Team member unavailability due to concurrent academic workload</div><div class="risk-mit">Mitigation: Task redistribution; maintain full documentation for handover</div></div></div>
+    <div class="risk-item"><span class="pill p-med">Medium</span><div><div class="risk-text">Integration issues between Python AI backend and React frontend</div><div class="risk-mit">Mitigation: RESTful APIs with clear contracts; incremental integration testing</div></div></div>
+    <div class="risk-item"><span class="pill p-low">Low</span><div><div class="risk-text">SHAP/XAI integration complexity increasing development time</div><div class="risk-mit">Mitigation: Dedicated sprint time; use official SHAP documentation</div></div></div>
+    <div class="risk-item"><span class="pill p-low">Low</span><div><div class="risk-text">Cloud deployment cost overruns on AWS/Azure</div><div class="risk-mit">Mitigation: Use student free-tier accounts; monitor resource usage weekly</div></div></div>
+    <div class="risk-item"><span class="pill p-low">Low</span><div><div class="risk-text">User role permission overlap causing unauthorized access</div><div class="risk-mit">Mitigation: Strict JWT-based RBAC; test each role independently before release</div></div></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     SRS DOCS
+═══════════════════════════════════════════ -->
+<div class="page" id="page-srs">
+  <div class="srs-tabs">
+    <button class="srs-tab active" onclick="showSRS('team',this)">Team & Stakeholders</button>
+    <button class="srs-tab" onclick="showSRS('epics',this)">Epics</button>
+    <button class="srs-tab" onclick="showSRS('backlog',this)">Product Backlog</button>
+    <button class="srs-tab" onclick="showSRS('stories',this)">User Stories</button>
+    <button class="srs-tab" onclick="showSRS('fr',this)">Functional Req.</button>
+    <button class="srs-tab" onclick="showSRS('uc',this)">Use Cases</button>
+    <button class="srs-tab" onclick="showSRS('nfr',this)">Non-Functional Req.</button>
+    <button class="srs-tab" onclick="showSRS('acceptance',this)">Acceptance Criteria</button>
+    <button class="srs-tab" onclick="showSRS('release',this)">Release Criteria</button>
+    <button class="srs-tab" onclick="showSRS('refinement',this)">Backlog Refinement</button>
+    <button class="srs-tab" onclick="showSRS('glossary',this)">Glossary</button>
+    <button class="srs-tab" onclick="showSRS('ivv',this)">IV&amp;V Report</button>
+  </div>
+
+  <!-- TEAM -->
+  <div class="srs-section active" id="srs-team">
+    <div class="team-grid">
+      <div class="team-card"><div class="team-av av-r">AH</div><div><div class="team-name">Asif Haroon</div><div class="team-role">Product Owner · Supervisor</div><div class="team-desc">Maximizes product value; manages and prioritises FYP backlog; approves deliverables; provides academic guidance.</div></div></div>
+      <div class="team-card"><div class="team-av av-b">MA</div><div><div class="team-name">Mumiz Ahmad</div><div class="team-role">Scrum Master · L1F22BSCS0593</div><div class="team-desc">Facilitates Scrum process; removes impediments; coaches team on Agile principles; manages Kanban board.</div></div></div>
+      <div class="team-card"><div class="team-av av-g">HR</div><div><div class="team-name">Husnain Rasool</div><div class="team-role">Full Stack Developer · L1F22BSCS0606</div><div class="team-desc">Frontend (React dashboard), Alert system, User management, JWT authentication.</div></div></div>
+      <div class="team-card"><div class="team-av av-a">SH</div><div><div class="team-name">Saad Hussain</div><div class="team-role">AI/ML Engineer · L1F22BSCS0584</div><div class="team-desc">Predictive models (LSTM/Prophet), Anomaly detection (Autoencoder/Isolation Forest), SHAP integration.</div></div></div>
+    </div>
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Stakeholders Identification</span></div>
+      <table class="data-table">
+        <thead><tr><th>Stakeholder</th><th>Role</th><th>Expectation</th></tr></thead>
+        <tbody>
+          <tr><td>Police Officers</td><td>Primary User</td><td>Monitor crime trends, receive real-time alerts, allocate resources efficiently</td></tr>
+          <tr><td>Government Authorities</td><td>Policy Maker</td><td>Long-term trends and summaries for evidence-based policy decisions</td></tr>
+          <tr><td>Researchers &amp; Analysts</td><td>Data Analyst</td><td>Detailed analytics, flexible exploration, NLP summaries</td></tr>
+          <tr><td>General Public</td><td>Viewer</td><td>Simple visualizations of local crime trends</td></tr>
+          <tr><td>Asif Haroon (Supervisor)</td><td>Product Owner</td><td>Academic quality, sprint approvals, deliverable review</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- EPICS -->
+  <div class="srs-section" id="srs-epics">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Epics for the Project</span><span class="section-sub">8 epics</span></div>
+      <table class="data-table">
+        <thead><tr><th>Epic ID</th><th>Epic Name</th><th>Description</th><th>Problem Area</th></tr></thead>
+        <tbody>
+          <tr><td><span class="epic-tag">EP-01</span></td><td>Data Management</td><td>Data collection, cleaning, feature engineering, temporal aggregation</td><td>Unstructured and incomplete crime datasets</td></tr>
+          <tr><td><span class="epic-tag">EP-02</span></td><td>Predictive Analytics</td><td>Time series forecasting using LSTM and Prophet models</td><td>Reactive systems lacking future crime prediction</td></tr>
+          <tr><td><span class="epic-tag">EP-03</span></td><td>Anomaly Detection</td><td>Identify sudden crime spikes using Autoencoder / Isolation Forest</td><td>Undetected abnormal events and emergencies</td></tr>
+          <tr><td><span class="epic-tag">EP-04</span></td><td>Explainable AI (XAI)</td><td>SHAP-based explanations for all ML model predictions</td><td>Lack of transparency in AI outputs reducing user trust</td></tr>
+          <tr><td><span class="epic-tag">EP-05</span></td><td>NLP &amp; Insight Engine</td><td>Plain-English narrative summaries of crime trends and reports</td><td>No human-readable crime intelligence generation</td></tr>
+          <tr><td><span class="epic-tag">EP-06</span></td><td>Dashboard &amp; Visualization</td><td>Interactive timelines, charts, risk gauges, radial indicators</td><td>Over-reliance on confusing map-based dashboards</td></tr>
+          <tr><td><span class="epic-tag">EP-07</span></td><td>Alert System</td><td>Threshold-based and AI-triggered real-time alerts</td><td>Late detection of crime surges limiting response time</td></tr>
+          <tr><td><span class="epic-tag">EP-08</span></td><td>User Management</td><td>JWT authentication, role-based access control (Admin/Analyst/Viewer)</td><td>Unsecured and undifferentiated system access</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- BACKLOG -->
+  <div class="srs-section" id="srs-backlog">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Product Backlog</span><span class="section-sub">PB-01 to PB-09</span></div>
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>Epic</th><th>Feature Description</th><th>Priority</th></tr></thead>
+        <tbody>
+          <tr><td>PB-01</td><td>Data Mgmt</td><td>Collect and preprocess historical crime datasets (Karachi, Lahore, Islamabad — PBS, UNODC, Open Data Pakistan)</td><td><span class="pill p-high">High</span></td></tr>
+          <tr><td>PB-02</td><td>Predictive</td><td>Implement LSTM / Prophet models for time-series crime forecasting</td><td><span class="pill p-high">High</span></td></tr>
+          <tr><td>PB-03</td><td>Anomaly</td><td>Implement Autoencoder / Isolation Forest for anomaly detection with confidence scoring</td><td><span class="pill p-high">High</span></td></tr>
+          <tr><td>PB-04</td><td>XAI</td><td>Integrate SHAP library for interpretable, visual model output explanations</td><td><span class="pill p-high">High</span></td></tr>
+          <tr><td>PB-05</td><td>NLP</td><td>Develop NLP pipeline for plain-English narrative crime intelligence reports</td><td><span class="pill p-med">Medium</span></td></tr>
+          <tr><td>PB-06</td><td>Dashboard</td><td>Design interactive dashboard with timelines, gauges, risk indices, and comparison charts</td><td><span class="pill p-high">High</span></td></tr>
+          <tr><td>PB-07</td><td>Alert</td><td>Build real-time alert system triggered by AI-detected or threshold-based crime events</td><td><span class="pill p-med">Medium</span></td></tr>
+          <tr><td>PB-08</td><td>User Mgmt</td><td>Implement JWT-based authentication and role-based access control</td><td><span class="pill p-med">Medium</span></td></tr>
+          <tr><td>PB-09</td><td>Data Mgmt</td><td>Add crime pattern clustering (K-Means / DBSCAN) for spatial-temporal grouping</td><td><span class="pill p-low">Low</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- USER STORIES -->
+  <div class="srs-section" id="srs-stories">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">User Stories &amp; Story Points</span><span class="section-sub">Fibonacci: 1, 3, 5, 8</span></div>
+      <table class="data-table">
+        <thead><tr><th>ID</th><th>User Story</th><th>Pts</th><th>Priority</th><th>Assigned</th></tr></thead>
+        <tbody>
+          <tr><td>US-01</td><td>As a police officer, I want to view crime predictions so that I can allocate resources proactively</td><td>8</td><td><span class="pill p-high">High</span></td><td>Saad</td></tr>
+          <tr><td>US-02</td><td>As an analyst, I want to detect anomalies so that I can identify unusual crime surges early</td><td>8</td><td><span class="pill p-high">High</span></td><td>Saad</td></tr>
+          <tr><td>US-03</td><td>As a government official, I want real-time alerts so that I can respond quickly to emergencies</td><td>5</td><td><span class="pill p-high">High</span></td><td>Husnain</td></tr>
+          <tr><td>US-04</td><td>As a user, I want to view the dashboard so that I can see all crime trends visually</td><td>5</td><td><span class="pill p-high">High</span></td><td>Husnain</td></tr>
+          <tr><td>US-05</td><td>As a researcher, I want XAI (SHAP) explanations so that I can understand why a prediction was made</td><td>8</td><td><span class="pill p-high">High</span></td><td>Mumiz</td></tr>
+          <tr><td>US-06</td><td>As a general user, I want narrative summaries so that I can understand crime trends without technical knowledge</td><td>5</td><td><span class="pill p-med">Medium</span></td><td>Mumiz</td></tr>
+          <tr><td>US-07</td><td>As an admin, I want role-based access so that I can control what each user type can view or edit</td><td>3</td><td><span class="pill p-med">Medium</span></td><td>Husnain</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- FR -->
+  <div class="srs-section" id="srs-fr">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Functional Requirements</span><span class="section-sub">FR-01 to FR-20</span></div>
+      <table class="data-table">
+        <thead><tr><th>FR ID</th><th>From</th><th>Requirement</th><th>Description</th></tr></thead>
+        <tbody>
+          <tr><td>FR-01</td><td>US-01</td><td>Crime Trend Forecasting</td><td>Allow police officers to generate crime predictions using trained LSTM/Prophet models</td></tr>
+          <tr><td>FR-02</td><td>US-01</td><td>Prediction Result Display</td><td>Display prediction results on the dashboard within 5 seconds of the request</td></tr>
+          <tr><td>FR-03</td><td>US-01</td><td>Forecast Accuracy Threshold</td><td>Achieve a minimum forecasting accuracy of 85% on test datasets</td></tr>
+          <tr><td>FR-04</td><td>US-02</td><td>Anomaly Detection Engine</td><td>Automatically detect unusual crime patterns using Autoencoder / Isolation Forest</td></tr>
+          <tr><td>FR-05</td><td>US-02</td><td>Confidence Score Display</td><td>Display confidence score and visual indicator on dashboard for every detected anomaly</td></tr>
+          <tr><td>FR-06</td><td>US-02</td><td>Anomaly Precision Threshold</td><td>Achieve minimum anomaly detection precision of 90% on test data</td></tr>
+          <tr><td>FR-07</td><td>US-03</td><td>Real-time Alert Trigger</td><td>Automatically trigger an alert within 2 seconds when a crime risk threshold is breached</td></tr>
+          <tr><td>FR-08</td><td>US-03</td><td>Alert Notification Display</td><td>Clearly display alert notifications to the relevant user role</td></tr>
+          <tr><td>FR-09</td><td>US-04</td><td>Interactive Dashboard</td><td>Provide dashboard displaying crime trends, timelines, risk gauges, and comparison charts</td></tr>
+          <tr><td>FR-10</td><td>US-04</td><td>Dashboard Load Time</td><td>Load the complete dashboard with all charts rendered within 3 seconds</td></tr>
+          <tr><td>FR-11</td><td>US-04</td><td>Responsive Design</td><td>Accessible and fully functional on desktop and mobile via Chrome, Edge, Firefox</td></tr>
+          <tr><td>FR-12</td><td>US-05</td><td>SHAP Explanation Generation</td><td>Generate SHAP-based explanations for every ML model prediction</td></tr>
+          <tr><td>FR-13</td><td>US-05</td><td>XAI Visual Output</td><td>Display SHAP values as a visual bar chart alongside each prediction result</td></tr>
+          <tr><td>FR-14</td><td>US-06</td><td>NLP Narrative Summary</td><td>Generate a plain-English narrative summary of crime trends from the loaded dataset</td></tr>
+          <tr><td>FR-15</td><td>US-06</td><td>Summary Generation Speed</td><td>Produce the NLP narrative summary within 3 seconds of data loading</td></tr>
+          <tr><td>FR-16</td><td>US-07</td><td>User Authentication</td><td>Authenticate users via JWT-based login with email and password</td></tr>
+          <tr><td>FR-17</td><td>US-07</td><td>Role-Based Access Control</td><td>Enforce three user roles — Admin, Analyst, Viewer — each with defined access permissions</td></tr>
+          <tr><td>FR-18</td><td>US-07</td><td>Password Security</td><td>Encrypt all passwords before storing; provide secure email-based password reset flow</td></tr>
+          <tr><td>FR-19</td><td>PB-01</td><td>Crime Dataset Upload</td><td>Allow Admin/Analyst users to upload and preprocess crime datasets in CSV format</td></tr>
+          <tr><td>FR-20</td><td>PB-09</td><td>Crime Pattern Clustering</td><td>Perform K-Means/DBSCAN clustering on crime data to identify spatial and temporal patterns</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- USE CASES -->
+  <div class="srs-section" id="srs-uc">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Use Cases</span><span class="section-sub">UC-01 to UC-08</span></div>
+      <table class="data-table">
+        <thead><tr><th>UC ID</th><th>Use Case</th><th>Actor</th><th>Description</th><th>Story</th></tr></thead>
+        <tbody>
+          <tr><td>UC-01</td><td>Crime Prediction</td><td>Police Officer</td><td>Run ML model to forecast future crime trends from historical data</td><td>US-01</td></tr>
+          <tr><td>UC-02</td><td>Anomaly Detection</td><td>Analyst</td><td>Detect unusual spikes or hidden patterns in crime data</td><td>US-02</td></tr>
+          <tr><td>UC-03</td><td>Alert Generation</td><td>System / Official</td><td>Notify users automatically when risk thresholds are exceeded</td><td>US-03</td></tr>
+          <tr><td>UC-04</td><td>View Dashboard</td><td>All Users</td><td>Display timelines, charts, risk gauges and trend indicators</td><td>US-04</td></tr>
+          <tr><td>UC-05</td><td>XAI Explanation</td><td>Researcher</td><td>Show SHAP-based visual explanation for each ML prediction</td><td>US-05</td></tr>
+          <tr><td>UC-06</td><td>NLP Summary</td><td>General User</td><td>Generate plain-English narrative summaries of crime intelligence</td><td>US-06</td></tr>
+          <tr><td>UC-07</td><td>User Login &amp; RBAC</td><td>All Users</td><td>Authenticate users and enforce role-based system access</td><td>US-07</td></tr>
+          <tr><td>UC-08</td><td>Data Upload</td><td>Admin / Analyst</td><td>Upload and preprocess new crime datasets into the system</td><td>PB-01</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- NFR -->
+  <div class="srs-section" id="srs-nfr">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Non-Functional Requirements</span></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-shield"></i> Reliability</div><div class="nfr-body">No data is lost or corrupted during processing. Error handling must prevent crashes. Backup mechanisms protect stored data. All AI model outputs must be validated before being presented to users. The system must perform consistently across sessions without unexpected failure.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-rocket"></i> Performance</div><div class="nfr-body">All major operations — prediction, anomaly detection, and dashboard loading — must be completed within 5 seconds. ML models must process datasets of 100,000+ records without degradation. Dashboard must load within 3 seconds and update dynamically without page refreshing.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-users"></i> Usability</div><div class="nfr-body">The interface must be usable by non-technical users (police officers, government officials). Visualizations must convey insights clearly without requiring data science expertise. Works on Chrome, Edge, Firefox on desktop and mobile.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-lock"></i> Security</div><div class="nfr-body">JWT-based authentication, role-based access control, HTTPS encryption, protection against unauthorized access and injection attacks.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-chart-arrows-vertical"></i> Scalability</div><div class="nfr-body">Cloud deployment on AWS/Azure handles increasing data volume and concurrent users without performance degradation.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-tools"></i> Maintainability</div><div class="nfr-body">Modular architecture — each AI module (forecasting, anomaly detection, XAI) can be updated independently.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-arrows-shuffle"></i> Flexibility</div><div class="nfr-body">New models (e.g., Transformer-based forecasters) can be added in future sprints without full system redesign.</div></div>
+      <div class="nfr-block"><div class="nfr-title"><i class="ti ti-device-desktop"></i> Compatibility</div><div class="nfr-body">Compatible with major browsers and devices; REST APIs support future mobile app integration.</div></div>
+    </div>
+  </div>
+
+  <!-- ACCEPTANCE CRITERIA -->
+  <div class="srs-section" id="srs-acceptance">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Acceptance Criteria &amp; Definition of Done</span></div>
+      <table class="data-table">
+        <thead><tr><th>Feature</th><th>Acceptance Criteria</th><th>Definition of Done</th></tr></thead>
+        <tbody>
+          <tr><td>User Registration</td><td>Register with name, email, password ✓ · Email unique ✓ · Password meets security rules ✓</td><td>Registration API works, UI validated, data stored in DB</td></tr>
+          <tr><td>User Login</td><td>Login with valid credentials ✓ · Invalid credentials show error ✓ · Session/token generated ✓</td><td>Login API tested, JWT working, error handling verified</td></tr>
+          <tr><td>Role Management</td><td>Admin can assign roles ✓ · Role-based access enforced ✓</td><td>Role logic implemented and tested with different users</td></tr>
+          <tr><td>Password Security</td><td>Passwords encrypted before storing ✓ · Reset via email link ✓</td><td>Encryption verified and reset workflow tested</td></tr>
+          <tr><td>Crime Prediction</td><td>Prediction within 5 sec ✓ · Accuracy ≥85% ✓ · Results on dashboard ✓</td><td>ML model deployed, API tested end-to-end, dashboard renders correctly</td></tr>
+          <tr><td>Anomaly Detection</td><td>Anomaly flagged with confidence score ✓ · Visual indicator shown ✓ · ≥90% precision ✓</td><td>Autoencoder/Isolation Forest tested; results rendered in UI</td></tr>
+          <tr><td>Alert System</td><td>Alert within 2 seconds of threshold breach ✓ · Notification clearly displayed ✓</td><td>Alert logic tested with simulated breach; notification confirmed</td></tr>
+          <tr><td>XAI (SHAP)</td><td>SHAP values as chart per prediction ✓ · Explanation in &lt;5 seconds ✓</td><td>SHAP integrated with all ML models; visual output validated</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- RELEASE CRITERIA -->
+  <div class="srs-section" id="srs-release">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Release Criteria</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>All user stories in Sprint 1–6 marked "Done" on Trello Kanban board</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>System passes unit tests, integration tests, and user acceptance tests</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>All AI modules return accurate, explainable, and reproducible outputs</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>Dashboard fully functional and responsive across major browsers</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>System deployed on cloud (AWS/Azure) and accessible via public URL</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>Supervisor (Product Owner) review and sign-off obtained</span></div>
+      <div class="release-item"><i class="ti ti-circle-check r-check"></i><span>IV &amp; V report completed and signed by independent reviewer</span></div>
+    </div>
+  </div>
+
+  <!-- BACKLOG REFINEMENT -->
+  <div class="srs-section" id="srs-refinement">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Backlog Refinement Plan</span><span class="section-sub">Once per sprint (every 2 weeks)</span></div>
+      <table class="data-table">
+        <thead><tr><th>Step</th><th>Activity</th><th>Description</th><th>Who</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Review &amp; Inspect</td><td>Review newly identified requirements from supervisor meetings, user feedback, and sprint retrospectives</td><td>All members</td></tr>
+          <tr><td>2</td><td>Re-estimate</td><td>Re-estimate story points for any backlog item whose complexity has changed based on new learning</td><td>Dev Team</td></tr>
+          <tr><td>3</td><td>Reprioritize</td><td>Reorder backlog items by business value; high-impact items moved to top; low-priority items deferred</td><td>Product Owner</td></tr>
+          <tr><td>4</td><td>Break Down</td><td>Decompose large or vague backlog items into smaller, clearly defined tasks with acceptance criteria</td><td>Scrum Master</td></tr>
+          <tr><td>5</td><td>Add New Items</td><td>Add newly discovered requirements or bug fixes as new backlog entries with proper IDs and priorities</td><td>Scrum Master + Team</td></tr>
+          <tr><td>6</td><td>Remove Obsolete</td><td>Remove or archive backlog items no longer relevant due to scope changes or supervisor direction</td><td>Product Owner</td></tr>
+          <tr><td>7</td><td>Update Trello</td><td>Reflect all changes on the Trello Kanban board so the team has a shared, up-to-date view</td><td>Scrum Master</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- GLOSSARY -->
+  <div class="srs-section" id="srs-glossary">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Appendix A — Glossary</span></div>
+      <div class="glossary-row"><div class="glossary-term">AI</div><div class="glossary-def">Artificial Intelligence</div></div>
+      <div class="glossary-row"><div class="glossary-term">ML</div><div class="glossary-def">Machine Learning</div></div>
+      <div class="glossary-row"><div class="glossary-term">NLP</div><div class="glossary-def">Natural Language Processing — extracting meaning from text data</div></div>
+      <div class="glossary-row"><div class="glossary-term">XAI</div><div class="glossary-def">Explainable Artificial Intelligence — making AI decisions understandable to humans</div></div>
+      <div class="glossary-row"><div class="glossary-term">SHAP</div><div class="glossary-def">Shapley Additive Explanations — method to explain individual ML model outputs</div></div>
+      <div class="glossary-row"><div class="glossary-term">LSTM</div><div class="glossary-def">Long Short-Term Memory — recurrent neural network for time-series forecasting</div></div>
+      <div class="glossary-row"><div class="glossary-term">API</div><div class="glossary-def">Application Programming Interface</div></div>
+      <div class="glossary-row"><div class="glossary-term">SRS</div><div class="glossary-def">Software Requirements Specification</div></div>
+      <div class="glossary-row"><div class="glossary-term">FYP</div><div class="glossary-def">Final Year Project</div></div>
+      <div class="glossary-row"><div class="glossary-term">UC</div><div class="glossary-def">Use Case</div></div>
+      <div class="glossary-row"><div class="glossary-term">JWT</div><div class="glossary-def">JSON Web Token — secure stateless user authentication mechanism</div></div>
+      <div class="glossary-row"><div class="glossary-term">RBAC</div><div class="glossary-def">Role-Based Access Control — controlling system access by assigned user role</div></div>
+      <div class="glossary-row"><div class="glossary-term">DoD</div><div class="glossary-def">Definition of Done — agreed-upon criteria for a feature to be considered complete</div></div>
+      <div class="glossary-row"><div class="glossary-term">Epic</div><div class="glossary-def">A large body of work broken down into smaller user stories and tasks</div></div>
+      <div class="glossary-row"><div class="glossary-term">Sprint</div><div class="glossary-def">Fixed time-period (typically 2 weeks) for completing a set of backlog items</div></div>
+      <div class="glossary-row"><div class="glossary-term">KPI</div><div class="glossary-def">Key Performance Indicator</div></div>
+    </div>
+  </div>
+
+  <!-- IV&V -->
+  <div class="srs-section" id="srs-ivv">
+    <div class="panel">
+      <div class="section-head"><span class="section-title">Appendix B — IV&amp;V Report</span><span class="section-sub">Group S26CS054 · UCP FYP Phase I</span></div>
+      <table class="data-table">
+        <thead><tr><th>S#</th><th>Defect Description</th><th>Origin Stage</th><th>Status</th><th>Fix Time</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Inaccurate crime prediction in low-data regions</td><td>Requirement</td><td><span class="pill p-done">Fixed</span></td><td>4h 00m</td></tr>
+          <tr><td>2</td><td>High latency in unsupervised clustering visualization</td><td>Design</td><td><span class="pill p-done">Fixed</span></td><td>6h 30m</td></tr>
+          <tr><td>3</td><td>Overlap in user role permissions for XAI reports</td><td>Analysis</td><td><span class="pill p-done">Fixed</span></td><td>2h 15m</td></tr>
+          <tr><td>4</td><td>Data mismatch during CSV pre-processing for LSTM</td><td>Processing</td><td><span class="pill p-done">Fixed</span></td><td>3h 45m</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <strong>Crime Vision 2.0</strong> &nbsp;·&nbsp; FYP Phase 1 &nbsp;·&nbsp; Group S26CS054 &nbsp;·&nbsp; University of Central Punjab &nbsp;·&nbsp; BSCS 2022–2026<br>
+  <span style="margin-top:4px;display:block">Husnain Rasool &nbsp;·&nbsp; Mumiz Ahmad &nbsp;·&nbsp; Saad Hussain &nbsp;·&nbsp; Supervisor: Asif Haroon</span>
+</footer>
+
+<script>
+function showPage(name) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + name).classList.add('active');
+  document.querySelector('[data-page="' + name + '"]').classList.add('active');
+  window.scrollTo(0,0);
+}
+function showSRS(name, el) {
+  document.querySelectorAll('.srs-section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.srs-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('srs-' + name).classList.add('active');
+  el.classList.add('active');
+}
+function doLogin() {
+  const role = document.getElementById('loginRole').value;
+  const map = { Admin: 'AA', Analyst: 'HR', Viewer: 'GP' };
+  document.getElementById('roleLabel').textContent = role;
+  document.getElementById('avatarInitials').textContent = map[role] || 'U';
+  showPage('dashboard');
+}
+function quickLogin(role, initials) {
+  document.getElementById('loginRole').value = role;
+  document.getElementById('roleLabel').textContent = role;
+  document.getElementById('avatarInitials').textContent = initials;
+  showPage('dashboard');
+}
+function setCity(el) {
+  document.querySelectorAll('.city-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+}
+
+// CHARTS
+Chart.defaults.color = '#5A5A66';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.06)';
+
+new Chart(document.getElementById('forecastChart'), {
+  type: 'line',
+  data: {
+    labels: ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+    datasets: [
+      { label: 'Predicted', data: [142,158,151,177,210,198,163], borderColor: '#E24B4A', backgroundColor: 'rgba(226,75,74,0.08)', tension: 0.4, fill: true, pointRadius: 4, pointBackgroundColor: '#E24B4A' },
+      { label: 'Actual', data: [138,162,148,null,null,null,null], borderColor: '#378ADD', borderDash: [5,4], tension: 0.4, pointRadius: 4, pointBackgroundColor: '#378ADD' }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { size: 11, family: 'JetBrains Mono' } } }, x: { grid: { display: false }, ticks: { font: { size: 11, family: 'JetBrains Mono' } } } } }
+});
+
+new Chart(document.getElementById('categoryChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Theft','Robbery','Assault','Fraud','Other'],
+    datasets: [{ data: [1820,940,680,510,450], backgroundColor: ['#E24B4A','#EF9F27','#378ADD','#1D9E75','#555560'], borderRadius: 5, borderSkipped: false }]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { ticks: { font: { size: 11, family: 'JetBrains Mono' } } }, x: { grid: { display: false }, ticks: { font: { size: 11, family: 'JetBrains Mono' } } } } }
+});
+
+new Chart(document.getElementById('anomalyChart'), {
+  type: 'bar',
+  data: {
+    labels: ['Wk 1','Wk 2','Wk 3','Wk 4','Wk 5','Wk 6'],
+    datasets: [
+      { label: 'Normal', data: [12,18,15,20,17,14], backgroundColor: 'rgba(55,138,221,0.35)', borderRadius: 3 },
+      { label: 'Anomaly', data: [0,2,0,1,3,1], backgroundColor: '#E24B4A', borderRadius: 3 }
+    ]
+  },
+  options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { x: { stacked: true, grid: { display: false }, ticks: { font: { size: 11, family: 'JetBrains Mono' } } }, y: { stacked: true, ticks: { font: { size: 11, family: 'JetBrains Mono' } } } } }
+});
+</script>
+</body>
+</html>
